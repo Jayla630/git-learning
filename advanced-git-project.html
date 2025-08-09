@@ -1,0 +1,551 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Git高级技巧实战项目</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Arial, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        
+        header {
+            background: white;
+            border-radius: 10px;
+            padding: 20px;
+            margin-bottom: 20px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+        
+        .git-status {
+            display: flex;
+            gap: 20px;
+            margin-top: 10px;
+        }
+        
+        .status-item {
+            background: #f0f0f0;
+            padding: 10px 20px;
+            border-radius: 5px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .status-indicator {
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            background: #4caf50;
+        }
+        
+        .main-content {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+            gap: 20px;
+        }
+        
+        .card {
+            background: white;
+            border-radius: 10px;
+            padding: 20px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+        
+        .card h2 {
+            color: #333;
+            margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .feature-section {
+            background: #e8f5e9;
+            border-left: 4px solid #4caf50;
+        }
+        
+        .bug-section {
+            background: #ffebee;
+            border-left: 4px solid #f44336;
+        }
+        
+        .stash-section {
+            background: #fff3e0;
+            border-left: 4px solid #ff9800;
+        }
+        
+        .hooks-section {
+            background: #e3f2fd;
+            border-left: 4px solid #2196f3;
+        }
+        
+        .todo-item {
+            background: #f5f5f5;
+            padding: 10px;
+            margin: 10px 0;
+            border-radius: 5px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            transition: transform 0.2s;
+        }
+        
+        .todo-item:hover {
+            transform: translateX(5px);
+            background: #eeeeee;
+        }
+        
+        .priority {
+            padding: 3px 8px;
+            border-radius: 3px;
+            font-size: 12px;
+            font-weight: bold;
+        }
+        
+        .priority-high {
+            background: #f44336;
+            color: white;
+        }
+        
+        .priority-medium {
+            background: #ff9800;
+            color: white;
+        }
+        
+        .priority-low {
+            background: #4caf50;
+            color: white;
+        }
+        
+        button {
+            background: #667eea;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: all 0.3s;
+            margin: 5px;
+        }
+        
+        button:hover {
+            background: #5a67d8;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+        }
+        
+        .console-log {
+            background: #263238;
+            color: #aed581;
+            padding: 15px;
+            border-radius: 5px;
+            font-family: 'Courier New', monospace;
+            margin: 10px 0;
+            overflow-x: auto;
+        }
+        
+        .notification {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: #4caf50;
+            color: white;
+            padding: 15px 20px;
+            border-radius: 5px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            display: none;
+            animation: slideIn 0.3s ease;
+        }
+        
+        @keyframes slideIn {
+            from {
+                transform: translateX(100%);
+                opacity: 0;
+            }
+            to {
+                transform: translateX(0);
+                opacity: 1;
+            }
+        }
+        
+        .commit-message {
+            background: #f5f5f5;
+            padding: 10px;
+            border-radius: 5px;
+            margin: 10px 0;
+            font-family: monospace;
+        }
+        
+        .branch-info {
+            display: inline-block;
+            background: #e3f2fd;
+            padding: 5px 10px;
+            border-radius: 3px;
+            font-family: monospace;
+            font-size: 14px;
+        }
+        
+        .conflict-marker {
+            background: #ffeb3b;
+            padding: 2px 5px;
+            border-radius: 3px;
+            font-weight: bold;
+        }
+        
+        /* 模拟Git工作流 */
+        .git-workflow {
+            background: white;
+            border-radius: 10px;
+            padding: 20px;
+            margin: 20px 0;
+        }
+        
+        .workflow-step {
+            display: flex;
+            align-items: center;
+            margin: 15px 0;
+            padding: 10px;
+            background: #f9f9f9;
+            border-radius: 5px;
+        }
+        
+        .step-number {
+            background: #667eea;
+            color: white;
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-right: 15px;
+            font-weight: bold;
+        }
+        
+        .code-block {
+            background: #1e1e1e;
+            color: #d4d4d4;
+            padding: 15px;
+            border-radius: 5px;
+            margin: 10px 0;
+            overflow-x: auto;
+        }
+        
+        .code-block pre {
+            margin: 0;
+            font-family: 'Consolas', 'Monaco', monospace;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>🚀 Git高级技巧实战项目</h1>
+            <div class="git-status">
+                <div class="status-item">
+                    <div class="status-indicator"></div>
+                    <span>分支: <span class="branch-info">master</span></span>
+                </div>
+                <div class="status-item">
+                    <div class="status-indicator" style="background: #ff9800;"></div>
+                    <span>未暂存: 3个文件</span>
+                </div>
+                <div class="status-item">
+                    <div class="status-indicator" style="background: #2196f3;"></div>
+                    <span>Stash: 2个存储</span>
+                </div>
+            </div>
+        </header>
+
+        <div class="main-content">
+            <!-- Stash练习区 -->
+            <div class="card stash-section">
+                <h2>📦 Stash练习 - 临时保存工作</h2>
+                <p>场景：正在开发新功能，突然需要修复紧急bug</p>
+                
+                <div class="todo-item">
+                    <span>🚧 开发通知系统（进行中...）</span>
+                    <span class="priority priority-medium">中</span>
+                </div>
+                
+                <button onclick="simulateStash()">执行 git stash</button>
+                <button onclick="showStashList()">查看 stash list</button>
+                <button onclick="applyStash()">应用 stash</button>
+                
+                <div class="console-log" id="stashOutput">
+                    $ git status<br>
+                    修改：notification.js<br>
+                    新文件：notification.css<br>
+                    // TODO: 完成通知动画
+                    console.log("开发中..."); // 忘记删除的调试代码
+                </div>
+            </div>
+
+            <!-- Rebase练习区 -->
+            <div class="card feature-section">
+                <h2>🔄 Rebase练习 - 整理提交历史</h2>
+                <p>清理混乱的提交记录</p>
+                
+                <div class="commit-message">WIP: 临时提交</div>
+                <div class="commit-message">修复拼写错误</div>
+                <div class="commit-message">再次修复</div>
+                <div class="commit-message">终于修好了</div>
+                
+                <button onclick="interactiveRebase()">交互式Rebase</button>
+                <button onclick="squashCommits()">合并提交</button>
+                
+                <div class="code-block">
+                    <pre id="rebaseCmd">$ git rebase -i HEAD~4
+# 将会打开编辑器，可以：
+# pick = 使用提交
+# squash = 合并到前一个提交
+# reword = 修改提交信息
+# drop = 删除提交</pre>
+                </div>
+            </div>
+
+            <!-- Git Hooks练习区 -->
+            <div class="card hooks-section">
+                <h2>🪝 Git Hooks - 自动化检查</h2>
+                <p>提交前自动运行检查</p>
+                
+                <div class="workflow-step">
+                    <div class="step-number">1</div>
+                    <span>检查console.log</span>
+                </div>
+                <div class="workflow-step">
+                    <div class="step-number">2</div>
+                    <span>验证提交信息格式</span>
+                </div>
+                <div class="workflow-step">
+                    <div class="step-number">3</div>
+                    <span>运行代码格式化</span>
+                </div>
+                
+                <button onclick="testPreCommit()">测试 pre-commit</button>
+                <button onclick="testCommitMsg()">测试 commit-msg</button>
+                
+                <div class="console-log" id="hookOutput">
+                    准备运行Git Hooks...
+                </div>
+            </div>
+
+            <!-- Bug修复区 -->
+            <div class="card bug-section">
+                <h2>🐛 紧急Bug修复</h2>
+                <p>用户报告：按钮无响应</p>
+                
+                <div class="todo-item">
+                    <span>修复登录按钮bug</span>
+                    <span class="priority priority-high">高</span>
+                </div>
+                
+                <button onclick="fixBug()">创建hotfix分支</button>
+                <button onclick="testFix()">测试修复</button>
+                <button onclick="mergeFix()">合并到master</button>
+                
+                <div class="conflict-marker">⚠️ 可能产生合并冲突</div>
+            </div>
+        </div>
+
+        <!-- Git工作流演示 -->
+        <div class="git-workflow">
+            <h2>📊 完整Git工作流演示</h2>
+            
+            <div class="workflow-step">
+                <div class="step-number">1</div>
+                <div>
+                    <strong>Stash当前工作</strong>
+                    <div class="code-block">
+                        <pre>git stash save "功能开发中"</pre>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="workflow-step">
+                <div class="step-number">2</div>
+                <div>
+                    <strong>创建hotfix分支</strong>
+                    <div class="code-block">
+                        <pre>git checkout -b hotfix/critical-bug</pre>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="workflow-step">
+                <div class="step-number">3</div>
+                <div>
+                    <strong>修复并提交</strong>
+                    <div class="code-block">
+                        <pre>git add .
+git commit -m "fix: 修复登录按钮无响应问题"</pre>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="workflow-step">
+                <div class="step-number">4</div>
+                <div>
+                    <strong>合并到master</strong>
+                    <div class="code-block">
+                        <pre>git checkout master
+git merge hotfix/critical-bug</pre>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="workflow-step">
+                <div class="step-number">5</div>
+                <div>
+                    <strong>恢复之前的工作</strong>
+                    <div class="code-block">
+                        <pre>git checkout feature/notification
+git stash pop</pre>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="notification" id="notification">
+        ✅ 操作成功！
+    </div>
+
+    <script>
+        // Stash模拟
+        function simulateStash() {
+            const output = document.getElementById('stashOutput');
+            output.innerHTML = `$ git stash save "通知功能开发中"<br>
+Saved working directory and index state On master: 通知功能开发中<br>
+HEAD is now at abc123 上一次提交`;
+            showNotification('工作已暂存！');
+        }
+        
+        function showStashList() {
+            const output = document.getElementById('stashOutput');
+            output.innerHTML = `$ git stash list<br>
+stash@{0}: On master: 通知功能开发中<br>
+stash@{1}: WIP on feature: 3a5aabb 添加深色模式`;
+            showNotification('显示stash列表');
+        }
+        
+        function applyStash() {
+            const output = document.getElementById('stashOutput');
+            output.innerHTML = `$ git stash pop<br>
+On branch master<br>
+Changes not staged for commit:<br>
+  modified:   notification.js<br>
+  new file:   notification.css<br>
+Dropped refs/stash@{0} (a1b2c3d4...)`;
+            showNotification('Stash已应用！');
+        }
+        
+        // Rebase模拟
+        function interactiveRebase() {
+            const output = document.getElementById('rebaseCmd');
+            output.textContent = `pick a1b2c3d WIP: 临时提交
+squash d4e5f6g 修复拼写错误
+squash g7h8i9j 再次修复
+reword j0k1l2m 终于修好了
+
+# 修改为：
+pick a1b2c3d feat: 添加通知功能
+# s d4e5f6g
+# s g7h8i9j
+# r j0k1l2m`;
+            showNotification('进入交互式rebase模式');
+        }
+        
+        function squashCommits() {
+            showNotification('提交已合并！');
+            const commits = document.querySelectorAll('.commit-message');
+            commits.forEach((c, i) => {
+                if (i > 0) c.style.display = 'none';
+            });
+            commits[0].textContent = 'feat: 添加完整的通知功能';
+        }
+        
+        // Git Hooks模拟
+        function testPreCommit() {
+            const output = document.getElementById('hookOutput');
+            output.innerHTML = `🔍 运行 pre-commit hook...<br>
+检查console.log... ❌ 发现3处<br>
+检查TODO注释... ⚠️ 发现2处<br>
+检查文件大小... ✅ 通过<br>
+<span style="color: #f44336;">提交被阻止！请先修复问题。</span>`;
+            showNotification('Pre-commit检查失败！', 'error');
+        }
+        
+        function testCommitMsg() {
+            const output = document.getElementById('hookOutput');
+            const msg = prompt('输入提交信息：', 'update code');
+            if (msg) {
+                if (msg.match(/^(feat|fix|docs|style|refactor|test|chore):/)) {
+                    output.innerHTML = `✅ 提交信息格式正确：${msg}`;
+                    showNotification('提交信息通过验证！');
+                } else {
+                    output.innerHTML = `❌ 提交信息格式错误！<br>
+应该以 feat:/fix:/docs: 等开头<br>
+你的信息：${msg}`;
+                    showNotification('提交信息格式错误！', 'error');
+                }
+            }
+        }
+        
+        // Bug修复模拟
+        function fixBug() {
+            showNotification('创建hotfix/login-bug分支');
+        }
+        
+        function testFix() {
+            showNotification('测试通过！Bug已修复');
+        }
+        
+        function mergeFix() {
+            if (confirm('可能产生冲突，是否继续？')) {
+                showNotification('合并成功！');
+            }
+        }
+        
+        // 通知功能
+        function showNotification(message, type = 'success') {
+            const notif = document.getElementById('notification');
+            notif.textContent = type === 'error' ? '❌ ' + message : '✅ ' + message;
+            notif.style.background = type === 'error' ? '#f44336' : '#4caf50';
+            notif.style.display = 'block';
+            setTimeout(() => {
+                notif.style.display = 'none';
+            }, 3000);
+        }
+        
+        // 页面加载动画
+        window.onload = function() {
+            const cards = document.querySelectorAll('.card');
+            cards.forEach((card, index) => {
+                card.style.opacity = '0';
+                card.style.transform = 'translateY(20px)';
+                setTimeout(() => {
+                    card.style.transition = 'all 0.5s ease';
+                    card.style.opacity = '1';
+                    card.style.transform = 'translateY(0)';
+                }, index * 100);
+            });
+        };
+    </script>
+</body>
+</html>
