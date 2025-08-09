@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="zh-CN">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -13,20 +14,24 @@
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             min-height: 100vh;
         }
+
         .container {
             background: white;
             border-radius: 10px;
             padding: 30px;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
         }
+
         h1 {
             color: #333;
             border-bottom: 3px solid #667eea;
             padding-bottom: 10px;
         }
+
         .todo-list {
             margin: 20px 0;
         }
+
         .todo-item {
             background: #f5f5f5;
             padding: 10px;
@@ -35,20 +40,24 @@
             display: flex;
             align-items: center;
         }
+
         .todo-item input[type="checkbox"] {
             margin-right: 10px;
         }
+
         .add-todo {
             display: flex;
             gap: 10px;
             margin-top: 20px;
         }
+
         .add-todo input {
             flex: 1;
             padding: 10px;
             border: 2px solid #ddd;
             border-radius: 5px;
         }
+
         .add-todo button {
             padding: 10px 20px;
             background: #667eea;
@@ -57,27 +66,54 @@
             border-radius: 5px;
             cursor: pointer;
         }
+
         .add-todo button:hover {
             background: #5a67d8;
         }
+
         .stats {
             margin-top: 20px;
             padding: 15px;
             background: #f8f9fa;
             border-radius: 5px;
         }
+
         .version {
             text-align: center;
             color: #666;
             margin-top: 20px;
             font-size: 14px;
         }
+
+        /* 额外的样式文件 */
+        .highlight {
+            background-color: yellow;
+            padding: 2px 5px;
+        }
+
+        .completed {
+            text-decoration: line-through;
+            opacity: 0.6;
+        }
+
+        .priority-high {
+            border-left: 4px solid red;
+        }
+
+        .priority-medium {
+            border-left: 4px solid orange;
+        }
+
+        .priority-low {
+            border-left: 4px solid green;
+        }
     </style>
 </head>
+
 <body>
     <div class="container">
         <h1>🚀 我的Git学习项目</h1>
-        
+
         <h2>待办事项列表</h2>
         <div class="todo-list" id="todoList">
             <div class="todo-item">
@@ -93,20 +129,20 @@
                 <label for="todo3">练习提交和推送</label>
             </div>
         </div>
-        
+
         <div class="add-todo">
             <input type="text" id="newTodo" placeholder="添加新的待办事项...">
             <button onclick="addTodo()">添加</button>
         </div>
-        
+
         <div class="stats">
             <h3>统计信息</h3>
             <p>总任务数：<span id="totalCount">3</span></p>
             <p>已完成：<span id="completedCount">0</span></p>
         </div>
-        
+
         <div class="version">
-            版本: 1.0.0 | 作者: Git学习者
+            版本: 1.0.1 | 作者: Git学习者
         </div>
     </div>
 
@@ -115,47 +151,48 @@
         function addTodo() {
             const input = document.getElementById('newTodo');
             const todoList = document.getElementById('todoList');
-            
+
             if (input.value.trim() === '') {
                 alert('请输入待办事项！');
                 return;
             }
-            
+
             const todoItem = document.createElement('div');
             todoItem.className = 'todo-item';
             const id = 'todo' + Date.now();
-            
+
             todoItem.innerHTML = `
                 <input type="checkbox" id="${id}" onchange="updateStats()">
                 <label for="${id}">${input.value}</label>
             `;
-            
+
             todoList.appendChild(todoItem);
             input.value = '';
             updateStats();
         }
-        
+
         // 更新统计信息
         function updateStats() {
             const checkboxes = document.querySelectorAll('.todo-item input[type="checkbox"]');
             const total = checkboxes.length;
             const completed = Array.from(checkboxes).filter(cb => cb.checked).length;
-            
+
             document.getElementById('totalCount').textContent = total;
             document.getElementById('completedCount').textContent = completed;
         }
-        
+
         // 监听回车键
-        document.getElementById('newTodo').addEventListener('keypress', function(e) {
+        document.getElementById('newTodo').addEventListener('keypress', function (e) {
             if (e.key === 'Enter') {
                 addTodo();
             }
         });
-        
+
         // 初始化统计
         document.querySelectorAll('.todo-item input[type="checkbox"]').forEach(cb => {
             cb.addEventListener('change', updateStats);
         });
     </script>
 </body>
+
 </html>
