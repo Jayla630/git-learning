@@ -1,198 +1,385 @@
 <!DOCTYPE html>
 <html lang="zh-CN">
-
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>我的Git学习项目</title>
+    <title>我的Git学习项目 - 深色模式版</title>
     <style>
+        :root {
+            --bg-gradient-start: #667eea;
+            --bg-gradient-end: #764ba2;
+            --container-bg: white;
+            --text-color: #333;
+            --border-color: #667eea;
+            --input-border: #ddd;
+            --input-bg: white;
+            --todo-bg: #f5f5f5;
+            --stats-bg: #f8f9fa;
+            --button-bg: #667eea;
+            --button-hover: #5a67d8;
+            --shadow: rgba(0,0,0,0.2);
+        }
+        
+        [data-theme="dark"] {
+            --bg-gradient-start: #1a1a2e;
+            --bg-gradient-end: #16213e;
+            --container-bg: #0f0f0f;
+            --text-color: #e0e0e0;
+            --border-color: #667eea;
+            --input-border: #444;
+            --input-bg: #1a1a1a;
+            --todo-bg: #1a1a1a;
+            --stats-bg: #1a1a1a;
+            --button-bg: #667eea;
+            --button-hover: #5a67d8;
+            --shadow: rgba(0,0,0,0.5);
+        }
+        
+        * {
+            transition: background-color 0.3s ease, color 0.3s ease;
+        }
+        
         body {
             font-family: Arial, sans-serif;
             max-width: 800px;
             margin: 0 auto;
             padding: 20px;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            background: linear-gradient(135deg, var(--bg-gradient-start) 0%, var(--bg-gradient-end) 100%);
             min-height: 100vh;
         }
-
+        
         .container {
-            background: white;
+            background: var(--container-bg);
+            color: var(--text-color);
             border-radius: 10px;
             padding: 30px;
-            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+            box-shadow: 0 10px 30px var(--shadow);
+            position: relative;
         }
-
+        
+        .theme-toggle {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            background: var(--button-bg);
+            color: white;
+            border: none;
+            border-radius: 50px;
+            padding: 10px 20px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 14px;
+        }
+        
+        .theme-toggle:hover {
+            background: var(--button-hover);
+            transform: scale(1.05);
+        }
+        
         h1 {
-            color: #333;
-            border-bottom: 3px solid #667eea;
+            color: var(--text-color);
+            border-bottom: 3px solid var(--border-color);
             padding-bottom: 10px;
         }
-
+        
+        h2, h3 {
+            color: var(--text-color);
+        }
+        
         .todo-list {
             margin: 20px 0;
         }
-
+        
         .todo-item {
-            background: #f5f5f5;
-            padding: 10px;
+            background: var(--todo-bg);
+            padding: 12px;
             margin: 10px 0;
             border-radius: 5px;
             display: flex;
             align-items: center;
+            border: 1px solid var(--input-border);
         }
-
+        
         .todo-item input[type="checkbox"] {
             margin-right: 10px;
+            width: 18px;
+            height: 18px;
+            cursor: pointer;
         }
-
+        
+        .todo-item label {
+            color: var(--text-color);
+            cursor: pointer;
+            flex: 1;
+        }
+        
+        .todo-item.completed label {
+            text-decoration: line-through;
+            opacity: 0.6;
+        }
+        
         .add-todo {
             display: flex;
             gap: 10px;
             margin-top: 20px;
         }
-
+        
         .add-todo input {
             flex: 1;
-            padding: 10px;
-            border: 2px solid #ddd;
+            padding: 12px;
+            border: 2px solid var(--input-border);
+            background: var(--input-bg);
+            color: var(--text-color);
             border-radius: 5px;
+            font-size: 14px;
         }
-
+        
         .add-todo button {
-            padding: 10px 20px;
-            background: #667eea;
+            padding: 12px 24px;
+            background: var(--button-bg);
             color: white;
             border: none;
             border-radius: 5px;
             cursor: pointer;
+            font-weight: bold;
         }
-
+        
         .add-todo button:hover {
-            background: #5a67d8;
+            background: var(--button-hover);
+            transform: translateY(-2px);
         }
-
+        
         .stats {
             margin-top: 20px;
             padding: 15px;
-            background: #f8f9fa;
+            background: var(--stats-bg);
             border-radius: 5px;
+            border: 1px solid var(--input-border);
         }
-
+        
+        .stats p {
+            color: var(--text-color);
+            margin: 8px 0;
+        }
+        
+        .stats span {
+            font-weight: bold;
+            color: var(--border-color);
+        }
+        
         .version {
             text-align: center;
-            color: #666;
+            color: var(--text-color);
+            opacity: 0.7;
             margin-top: 20px;
             font-size: 14px;
         }
-
-        /* 额外的样式文件 */
-        .highlight {
-            background-color: yellow;
-            padding: 2px 5px;
+        
+        .delete-btn {
+            background: #dc3545;
+            color: white;
+            border: none;
+            padding: 5px 10px;
+            border-radius: 3px;
+            cursor: pointer;
+            margin-left: 10px;
         }
-
-        .completed {
-            text-decoration: line-through;
-            opacity: 0.6;
+        
+        .delete-btn:hover {
+            background: #c82333;
         }
-
+        
+        .priority-select {
+            margin-left: 10px;
+            padding: 5px;
+            border-radius: 3px;
+            background: var(--input-bg);
+            color: var(--text-color);
+            border: 1px solid var(--input-border);
+        }
+        
         .priority-high {
-            border-left: 4px solid red;
+            border-left: 4px solid #dc3545 !important;
         }
-
+        
         .priority-medium {
-            border-left: 4px solid orange;
+            border-left: 4px solid #ffc107 !important;
         }
-
+        
         .priority-low {
-            border-left: 4px solid green;
+            border-left: 4px solid #28a745 !important;
         }
     </style>
 </head>
-
 <body>
     <div class="container">
-        <h1>🚀 我的Git学习项目</h1>
-
+        <button class="theme-toggle" onclick="toggleTheme()">
+            <span id="themeIcon">🌙</span>
+            <span id="themeText">深色模式</span>
+        </button>
+        
+        <h1>🚀 我的Git学习项目 - 增强版</h1>
+        
         <h2>待办事项列表</h2>
         <div class="todo-list" id="todoList">
-            <div class="todo-item">
-                <input type="checkbox" id="todo1">
+            <div class="todo-item priority-high">
+                <input type="checkbox" id="todo1" onchange="toggleComplete(this)">
                 <label for="todo1">学习Git基础命令</label>
+                <select class="priority-select" onchange="updatePriority(this)">
+                    <option value="high" selected>高优先级</option>
+                    <option value="medium">中优先级</option>
+                    <option value="low">低优先级</option>
+                </select>
+                <button class="delete-btn" onclick="deleteTodo(this)">删除</button>
             </div>
-            <div class="todo-item">
-                <input type="checkbox" id="todo2">
+            <div class="todo-item priority-medium">
+                <input type="checkbox" id="todo2" onchange="toggleComplete(this)">
                 <label for="todo2">创建第一个仓库</label>
+                <select class="priority-select" onchange="updatePriority(this)">
+                    <option value="high">高优先级</option>
+                    <option value="medium" selected>中优先级</option>
+                    <option value="low">低优先级</option>
+                </select>
+                <button class="delete-btn" onclick="deleteTodo(this)">删除</button>
             </div>
-            <div class="todo-item">
-                <input type="checkbox" id="todo3">
+            <div class="todo-item priority-low">
+                <input type="checkbox" id="todo3" onchange="toggleComplete(this)">
                 <label for="todo3">练习提交和推送</label>
+                <select class="priority-select" onchange="updatePriority(this)">
+                    <option value="high">高优先级</option>
+                    <option value="medium">中优先级</option>
+                    <option value="low" selected>低优先级</option>
+                </select>
+                <button class="delete-btn" onclick="deleteTodo(this)">删除</button>
             </div>
         </div>
-
+        
         <div class="add-todo">
             <input type="text" id="newTodo" placeholder="添加新的待办事项...">
             <button onclick="addTodo()">添加</button>
         </div>
-
+        
         <div class="stats">
-            <h3>统计信息</h3>
+            <h3>📊 统计信息</h3>
             <p>总任务数：<span id="totalCount">3</span></p>
             <p>已完成：<span id="completedCount">0</span></p>
+            <p>完成率：<span id="completionRate">0%</span></p>
         </div>
-
+        
         <div class="version">
-            版本: 1.0.1 | 作者: Git学习者
+            版本: 2.0.0 | 作者: Git学习者 | 特性: 深色模式支持
         </div>
     </div>
 
     <script>
-        // 待办事项功能
+        // 主题切换功能
+        function toggleTheme() {
+            const html = document.documentElement;
+            const themeIcon = document.getElementById('themeIcon');
+            const themeText = document.getElementById('themeText');
+            
+            if (html.getAttribute('data-theme') === 'dark') {
+                html.removeAttribute('data-theme');
+                themeIcon.textContent = '🌙';
+                themeText.textContent = '深色模式';
+                localStorage.setItem('theme', 'light');
+            } else {
+                html.setAttribute('data-theme', 'dark');
+                themeIcon.textContent = '☀️';
+                themeText.textContent = '浅色模式';
+                localStorage.setItem('theme', 'dark');
+            }
+        }
+        
+        // 页面加载时检查主题设置
+        window.onload = function() {
+            const savedTheme = localStorage.getItem('theme');
+            if (savedTheme === 'dark') {
+                document.documentElement.setAttribute('data-theme', 'dark');
+                document.getElementById('themeIcon').textContent = '☀️';
+                document.getElementById('themeText').textContent = '浅色模式';
+            }
+            updateStats();
+        };
+        
+        // 切换完成状态
+        function toggleComplete(checkbox) {
+            const todoItem = checkbox.parentElement;
+            if (checkbox.checked) {
+                todoItem.classList.add('completed');
+            } else {
+                todoItem.classList.remove('completed');
+            }
+            updateStats();
+        }
+        
+        // 添加待办事项
         function addTodo() {
             const input = document.getElementById('newTodo');
             const todoList = document.getElementById('todoList');
-
+            
             if (input.value.trim() === '') {
                 alert('请输入待办事项！');
                 return;
             }
-
+            
             const todoItem = document.createElement('div');
-            todoItem.className = 'todo-item';
+            todoItem.className = 'todo-item priority-medium';
             const id = 'todo' + Date.now();
-
+            
             todoItem.innerHTML = `
-                <input type="checkbox" id="${id}" onchange="updateStats()">
+                <input type="checkbox" id="${id}" onchange="toggleComplete(this)">
                 <label for="${id}">${input.value}</label>
+                <select class="priority-select" onchange="updatePriority(this)">
+                    <option value="high">高优先级</option>
+                    <option value="medium" selected>中优先级</option>
+                    <option value="low">低优先级</option>
+                </select>
+                <button class="delete-btn" onclick="deleteTodo(this)">删除</button>
             `;
-
+            
             todoList.appendChild(todoItem);
             input.value = '';
             updateStats();
         }
-
+        
+        // 删除待办事项
+        function deleteTodo(btn) {
+            if (confirm('确定要删除这个任务吗？')) {
+                btn.parentElement.remove();
+                updateStats();
+            }
+        }
+        
+        // 更新优先级
+        function updatePriority(select) {
+            const todoItem = select.parentElement;
+            todoItem.className = 'todo-item priority-' + select.value;
+            if (todoItem.querySelector('input[type="checkbox"]').checked) {
+                todoItem.classList.add('completed');
+            }
+        }
+        
         // 更新统计信息
         function updateStats() {
             const checkboxes = document.querySelectorAll('.todo-item input[type="checkbox"]');
             const total = checkboxes.length;
             const completed = Array.from(checkboxes).filter(cb => cb.checked).length;
-
+            const rate = total > 0 ? Math.round((completed / total) * 100) : 0;
+            
             document.getElementById('totalCount').textContent = total;
             document.getElementById('completedCount').textContent = completed;
+            document.getElementById('completionRate').textContent = rate + '%';
         }
-
+        
         // 监听回车键
-        document.getElementById('newTodo').addEventListener('keypress', function (e) {
+        document.getElementById('newTodo').addEventListener('keypress', function(e) {
             if (e.key === 'Enter') {
                 addTodo();
             }
         });
-
-        // 初始化统计
-        document.querySelectorAll('.todo-item input[type="checkbox"]').forEach(cb => {
-            cb.addEventListener('change', updateStats);
-        });
     </script>
 </body>
-
 </html>
