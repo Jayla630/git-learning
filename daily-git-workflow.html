@@ -1,0 +1,500 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Git日常工作流程</title>
+    <style>
+        body {
+            font-family: 'Microsoft YaHei', Arial, sans-serif;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+        }
+        
+        .container {
+            background: white;
+            border-radius: 15px;
+            padding: 30px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.1);
+        }
+        
+        h1 {
+            color: #333;
+            text-align: center;
+            border-bottom: 3px solid #667eea;
+            padding-bottom: 15px;
+        }
+        
+        .workflow-section {
+            margin: 30px 0;
+            padding: 25px;
+            background: #f8f9fa;
+            border-radius: 10px;
+            border-left: 5px solid #667eea;
+        }
+        
+        .workflow-title {
+            font-size: 20px;
+            font-weight: bold;
+            color: #667eea;
+            margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .step {
+            background: white;
+            padding: 15px;
+            margin: 10px 0;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            transition: transform 0.3s, box-shadow 0.3s;
+            cursor: pointer;
+        }
+        
+        .step:hover {
+            transform: translateX(5px);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+        }
+        
+        .step-number {
+            background: #667eea;
+            color: white;
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            margin-right: 15px;
+            flex-shrink: 0;
+        }
+        
+        .step-content {
+            flex: 1;
+        }
+        
+        .command {
+            background: #263238;
+            color: #aed581;
+            padding: 10px 15px;
+            border-radius: 5px;
+            font-family: 'Consolas', 'Monaco', monospace;
+            margin: 5px 0;
+            position: relative;
+            overflow-x: auto;
+        }
+        
+        .command:hover {
+            background: #1e272e;
+        }
+        
+        .copy-btn {
+            position: absolute;
+            right: 10px;
+            top: 50%;
+            transform: translateY(-50%);
+            background: #667eea;
+            color: white;
+            border: none;
+            padding: 5px 10px;
+            border-radius: 3px;
+            cursor: pointer;
+            font-size: 12px;
+        }
+        
+        .copy-btn:hover {
+            background: #5a67d8;
+        }
+        
+        .decision-box {
+            background: #fff3cd;
+            border: 2px solid #ffc107;
+            border-radius: 8px;
+            padding: 15px;
+            margin: 15px 0;
+        }
+        
+        .decision-title {
+            font-weight: bold;
+            color: #856404;
+            margin-bottom: 10px;
+        }
+        
+        .option {
+            background: white;
+            padding: 10px;
+            margin: 5px 0;
+            border-radius: 5px;
+            border-left: 3px solid #ffc107;
+        }
+        
+        .best-practice {
+            background: #d4edda;
+            border: 1px solid #c3e6cb;
+            border-radius: 8px;
+            padding: 15px;
+            margin: 20px 0;
+        }
+        
+        .best-practice-title {
+            color: #155724;
+            font-weight: bold;
+            margin-bottom: 10px;
+        }
+        
+        .warning {
+            background: #f8d7da;
+            border: 1px solid #f5c6cb;
+            border-radius: 8px;
+            padding: 15px;
+            margin: 20px 0;
+        }
+        
+        .warning-title {
+            color: #721c24;
+            font-weight: bold;
+            margin-bottom: 10px;
+        }
+        
+        .flow-diagram {
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            margin: 20px 0;
+            text-align: center;
+        }
+        
+        .branch-visual {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 20px 0;
+            font-family: monospace;
+        }
+        
+        .branch {
+            padding: 8px 16px;
+            background: #e3f2fd;
+            border: 2px solid #2196f3;
+            border-radius: 20px;
+            margin: 0 10px;
+        }
+        
+        .arrow {
+            color: #2196f3;
+            font-size: 24px;
+            margin: 0 10px;
+        }
+        
+        .emoji {
+            font-size: 24px;
+            margin-right: 5px;
+        }
+        
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+            100% { transform: scale(1); }
+        }
+        
+        .important {
+            animation: pulse 2s infinite;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🚀 Git 日常工作流程 - 分支同步最佳实践</h1>
+        
+        <!-- 早晨开始工作 -->
+        <div class="workflow-section">
+            <div class="workflow-title">
+                <span class="emoji">☀️</span>
+                早晨开始工作流程
+            </div>
+            
+            <div class="step">
+                <div class="step-number">1</div>
+                <div class="step-content">
+                    <strong>同步主分支</strong>
+                    <div class="command">
+                        git checkout master
+                        <button class="copy-btn" onclick="copyCommand(this)">复制</button>
+                    </div>
+                    <div class="command">
+                        git pull origin master
+                        <button class="copy-btn" onclick="copyCommand(this)">复制</button>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="step">
+                <div class="step-number">2</div>
+                <div class="step-content">
+                    <strong>更新功能分支</strong>
+                    <div class="command">
+                        git checkout feature/my-feature
+                        <button class="copy-btn" onclick="copyCommand(this)">复制</button>
+                    </div>
+                    <div class="command">
+                        git rebase master
+                        <button class="copy-btn" onclick="copyCommand(this)">复制</button>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="step">
+                <div class="step-number">3</div>
+                <div class="step-content">
+                    <strong>开始今天的工作</strong>
+                    <div class="command">
+                        # 继续昨天的工作
+                        <button class="copy-btn" onclick="copyCommand(this)">复制</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- 分支同步决策树 -->
+        <div class="workflow-section">
+            <div class="workflow-title">
+                <span class="emoji">🤔</span>
+                分支同步决策树
+            </div>
+            
+            <div class="decision-box">
+                <div class="decision-title">问题：Master分支有新更新，我的功能分支需要同步吗？</div>
+                
+                <div class="option">
+                    <strong>✅ 需要同步的情况：</strong>
+                    <ul>
+                        <li>其他人修改了你依赖的代码</li>
+                        <li>有重要的bug修复</li>
+                        <li>准备合并前（必须同步）</li>
+                        <li>长期功能分支（每周至少同步一次）</li>
+                    </ul>
+                </div>
+                
+                <div class="option">
+                    <strong>⏸️ 可以暂缓同步的情况：</strong>
+                    <ul>
+                        <li>正在处理复杂逻辑，不想被打断</li>
+                        <li>更新不影响你的功能</li>
+                        <li>即将完成当前任务（完成后再同步）</li>
+                    </ul>
+                </div>
+            </div>
+            
+            <div class="flow-diagram">
+                <h3>选择同步方式</h3>
+                <div class="branch-visual">
+                    <div class="branch">功能分支</div>
+                    <span class="arrow">→</span>
+                    <div class="branch important">Rebase?</div>
+                    <span class="arrow">←</span>
+                    <div class="branch">Master</div>
+                </div>
+            </div>
+            
+            <div class="best-practice">
+                <div class="best-practice-title">💡 最佳实践：使用 Rebase</div>
+                <div class="command">
+                    git checkout feature/my-feature<br>
+                    git rebase master
+                    <button class="copy-btn" onclick="copyCommand(this)">复制</button>
+                </div>
+                <p>优点：保持提交历史线性清晰，方便代码审查</p>
+            </div>
+            
+            <div class="warning">
+                <div class="warning-title">⚠️ 注意事项</div>
+                <ul>
+                    <li>如果功能分支已经推送并有他人使用，不要使用rebase</li>
+                    <li>改用 merge: <code>git merge master</code></li>
+                </ul>
+            </div>
+        </div>
+        
+        <!-- 处理冲突 -->
+        <div class="workflow-section">
+            <div class="workflow-title">
+                <span class="emoji">⚔️</span>
+                处理同步冲突
+            </div>
+            
+            <div class="step">
+                <div class="step-number">1</div>
+                <div class="step-content">
+                    <strong>查看冲突文件</strong>
+                    <div class="command">
+                        git status
+                        <button class="copy-btn" onclick="copyCommand(this)">复制</button>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="step">
+                <div class="step-number">2</div>
+                <div class="step-content">
+                    <strong>解决冲突</strong>
+                    <div class="command">
+                        # 编辑冲突文件，选择保留的代码
+                        <button class="copy-btn" onclick="copyCommand(this)">复制</button>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="step">
+                <div class="step-number">3</div>
+                <div class="step-content">
+                    <strong>继续rebase</strong>
+                    <div class="command">
+                        git add .<br>
+                        git rebase --continue
+                        <button class="copy-btn" onclick="copyCommand(this)">复制</button>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="step">
+                <div class="step-number">🚫</div>
+                <div class="step-content">
+                    <strong>放弃rebase（如果太复杂）</strong>
+                    <div class="command">
+                        git rebase --abort
+                        <button class="copy-btn" onclick="copyCommand(this)">复制</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- 完整工作流示例 -->
+        <div class="workflow-section">
+            <div class="workflow-title">
+                <span class="emoji">📋</span>
+                完整的一天工作流
+            </div>
+            
+            <div class="step">
+                <div class="step-number">🌅</div>
+                <div class="step-content">
+                    <strong>9:00 - 开始工作</strong>
+                    <div class="command">
+                        git checkout master && git pull<br>
+                        git checkout feature/user-login<br>
+                        git rebase master
+                        <button class="copy-btn" onclick="copyCommand(this)">复制</button>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="step">
+                <div class="step-number">💻</div>
+                <div class="step-content">
+                    <strong>10:00 - 开发功能</strong>
+                    <div class="command">
+                        # 编写代码...<br>
+                        git add .<br>
+                        git commit -m "feat: 添加登录验证"
+                        <button class="copy-btn" onclick="copyCommand(this)">复制</button>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="step">
+                <div class="step-number">🚨</div>
+                <div class="step-content">
+                    <strong>14:00 - 紧急修复</strong>
+                    <div class="command">
+                        git stash save "登录功能开发中"<br>
+                        git checkout master<br>
+                        git checkout -b hotfix/payment-bug<br>
+                        # 修复bug...<br>
+                        git commit -m "fix: 修复支付bug"<br>
+                        git checkout master && git merge hotfix/payment-bug<br>
+                        git push origin master
+                        <button class="copy-btn" onclick="copyCommand(this)">复制</button>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="step">
+                <div class="step-number">🔄</div>
+                <div class="step-content">
+                    <strong>15:00 - 继续功能开发</strong>
+                    <div class="command">
+                        git checkout feature/user-login<br>
+                        git rebase master  # 同步hotfix的修改<br>
+                        git stash pop
+                        <button class="copy-btn" onclick="copyCommand(this)">复制</button>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="step">
+                <div class="step-number">✅</div>
+                <div class="step-content">
+                    <strong>17:00 - 准备提交PR</strong>
+                    <div class="command">
+                        git rebase -i master  # 整理提交<br>
+                        git push origin feature/user-login --force-with-lease
+                        <button class="copy-btn" onclick="copyCommand(this)">复制</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- 核心原则 -->
+        <div class="workflow-section">
+            <div class="workflow-title">
+                <span class="emoji">🎯</span>
+                核心原则总结
+            </div>
+            
+            <div class="best-practice">
+                <div class="best-practice-title">记住这些原则</div>
+                <ol>
+                    <li><strong>不要删除功能分支重建</strong> - 使用 rebase 或 merge 同步</li>
+                    <li><strong>每天早上同步一次</strong> - 避免积累太多冲突</li>
+                    <li><strong>提交前必须同步</strong> - 确保基于最新代码</li>
+                    <li><strong>私有分支用 rebase</strong> - 保持历史清晰</li>
+                    <li><strong>共享分支用 merge</strong> - 避免改写他人历史</li>
+                    <li><strong>定期清理旧分支</strong> - 保持仓库整洁</li>
+                </ol>
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        function copyCommand(button) {
+            const command = button.parentElement.textContent.replace('复制', '').trim();
+            navigator.clipboard.writeText(command).then(() => {
+                const originalText = button.textContent;
+                button.textContent = '已复制!';
+                button.style.background = '#4caf50';
+                setTimeout(() => {
+                    button.textContent = originalText;
+                    button.style.background = '#667eea';
+                }, 2000);
+            });
+        }
+        
+        // 添加交互效果
+        document.querySelectorAll('.step').forEach(step => {
+            step.addEventListener('click', function() {
+                this.style.background = '#e8f5e9';
+                setTimeout(() => {
+                    this.style.background = 'white';
+                }, 300);
+            });
+        });
+    </script>
+</body>
+</html>
