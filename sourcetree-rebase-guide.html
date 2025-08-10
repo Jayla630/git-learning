@@ -1,0 +1,726 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sourcetree交互式Rebase完整指南</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Microsoft YaHei', 'Segoe UI', Arial, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+        
+        .header {
+            background: white;
+            border-radius: 15px;
+            padding: 30px;
+            margin-bottom: 20px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+            text-align: center;
+        }
+        
+        h1 {
+            color: #333;
+            font-size: 32px;
+            margin-bottom: 10px;
+        }
+        
+        .subtitle {
+            color: #666;
+            font-size: 16px;
+        }
+        
+        .main-content {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+            margin-bottom: 20px;
+        }
+        
+        @media (max-width: 968px) {
+            .main-content {
+                grid-template-columns: 1fr;
+            }
+        }
+        
+        .card {
+            background: white;
+            border-radius: 10px;
+            padding: 25px;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.1);
+        }
+        
+        .card-title {
+            font-size: 20px;
+            font-weight: bold;
+            color: #667eea;
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .step-container {
+            background: #f8f9fa;
+            border-radius: 8px;
+            padding: 15px;
+            margin-bottom: 15px;
+            border-left: 4px solid #667eea;
+        }
+        
+        .step-number {
+            display: inline-block;
+            background: #667eea;
+            color: white;
+            width: 25px;
+            height: 25px;
+            border-radius: 50%;
+            text-align: center;
+            line-height: 25px;
+            font-weight: bold;
+            margin-right: 10px;
+        }
+        
+        .commit-list {
+            background: #263238;
+            color: #aed581;
+            padding: 15px;
+            border-radius: 8px;
+            font-family: 'Consolas', 'Monaco', monospace;
+            margin: 15px 0;
+        }
+        
+        .commit-item {
+            padding: 8px;
+            margin: 5px 0;
+            background: rgba(255,255,255,0.05);
+            border-radius: 4px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            transition: background 0.3s;
+        }
+        
+        .commit-item:hover {
+            background: rgba(255,255,255,0.1);
+        }
+        
+        .action-select {
+            background: #4caf50;
+            color: white;
+            padding: 4px 8px;
+            border-radius: 4px;
+            border: none;
+            cursor: pointer;
+        }
+        
+        .rebase-action {
+            display: inline-block;
+            padding: 5px 10px;
+            margin: 5px;
+            border-radius: 5px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: transform 0.2s;
+        }
+        
+        .rebase-action:hover {
+            transform: scale(1.05);
+        }
+        
+        .action-pick {
+            background: #4caf50;
+            color: white;
+        }
+        
+        .action-squash {
+            background: #ff9800;
+            color: white;
+        }
+        
+        .action-reword {
+            background: #2196f3;
+            color: white;
+        }
+        
+        .action-drop {
+            background: #f44336;
+            color: white;
+        }
+        
+        .action-edit {
+            background: #9c27b0;
+            color: white;
+        }
+        
+        .warning-box {
+            background: #fff3cd;
+            border: 2px solid #ffc107;
+            border-radius: 8px;
+            padding: 15px;
+            margin: 15px 0;
+        }
+        
+        .warning-title {
+            color: #856404;
+            font-weight: bold;
+            margin-bottom: 10px;
+        }
+        
+        .success-box {
+            background: #d4edda;
+            border: 2px solid #28a745;
+            border-radius: 8px;
+            padding: 15px;
+            margin: 15px 0;
+        }
+        
+        .success-title {
+            color: #155724;
+            font-weight: bold;
+            margin-bottom: 10px;
+        }
+        
+        .error-box {
+            background: #f8d7da;
+            border: 2px solid #dc3545;
+            border-radius: 8px;
+            padding: 15px;
+            margin: 15px 0;
+        }
+        
+        .error-title {
+            color: #721c24;
+            font-weight: bold;
+            margin-bottom: 10px;
+        }
+        
+        .demo-window {
+            background: #f5f5f5;
+            border: 2px solid #ddd;
+            border-radius: 8px;
+            padding: 20px;
+            margin: 20px 0;
+        }
+        
+        .window-header {
+            background: #e0e0e0;
+            margin: -20px -20px 15px -20px;
+            padding: 10px 20px;
+            border-radius: 6px 6px 0 0;
+            font-weight: bold;
+        }
+        
+        .button {
+            background: #667eea;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            margin: 5px;
+            transition: background 0.3s;
+        }
+        
+        .button:hover {
+            background: #5a67d8;
+        }
+        
+        .button-danger {
+            background: #dc3545;
+        }
+        
+        .button-danger:hover {
+            background: #c82333;
+        }
+        
+        .interactive-demo {
+            background: white;
+            border-radius: 10px;
+            padding: 25px;
+            margin: 20px 0;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.1);
+        }
+        
+        .commit-row {
+            display: flex;
+            align-items: center;
+            padding: 10px;
+            background: #f8f9fa;
+            margin: 5px 0;
+            border-radius: 5px;
+            cursor: move;
+        }
+        
+        .commit-row.dragging {
+            opacity: 0.5;
+        }
+        
+        .drag-handle {
+            margin-right: 10px;
+            color: #999;
+            cursor: move;
+        }
+        
+        .emoji {
+            font-size: 24px;
+            margin-right: 5px;
+        }
+        
+        .code-block {
+            background: #1e1e1e;
+            color: #d4d4d4;
+            padding: 15px;
+            border-radius: 5px;
+            overflow-x: auto;
+            font-family: 'Consolas', 'Monaco', monospace;
+        }
+        
+        .highlight {
+            background: yellow;
+            color: black;
+            padding: 2px 4px;
+            border-radius: 3px;
+        }
+        
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 15px 0;
+        }
+        
+        th, td {
+            padding: 10px;
+            text-align: left;
+            border-bottom: 1px solid #ddd;
+        }
+        
+        th {
+            background: #667eea;
+            color: white;
+        }
+        
+        tr:hover {
+            background: #f5f5f5;
+        }
+        
+        .tabs {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+        
+        .tab {
+            padding: 10px 20px;
+            background: #e0e0e0;
+            border-radius: 5px 5px 0 0;
+            cursor: pointer;
+            transition: background 0.3s;
+        }
+        
+        .tab.active {
+            background: white;
+            font-weight: bold;
+        }
+        
+        .tab-content {
+            display: none;
+            background: white;
+            padding: 20px;
+            border-radius: 0 5px 5px 5px;
+        }
+        
+        .tab-content.active {
+            display: block;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🚀 Sourcetree 交互式 Rebase 完整指南</h1>
+            <p class="subtitle">整理提交历史，让Git记录更清晰</p>
+        </div>
+        
+        <div class="main-content">
+            <!-- 左侧：操作步骤 -->
+            <div class="card">
+                <div class="card-title">
+                    <span class="emoji">📋</span>
+                    操作步骤详解
+                </div>
+                
+                <div class="step-container">
+                    <span class="step-number">1</span>
+                    <strong>选择起始点</strong>
+                    <p style="margin-top: 10px;">在Sourcetree历史记录中，找到你要整理的提交范围的<strong>起始点</strong>（不包含这个提交本身）</p>
+                </div>
+                
+                <div class="step-container">
+                    <span class="step-number">2</span>
+                    <strong>右键菜单</strong>
+                    <p style="margin-top: 10px;">右键点击起始提交，选择：</p>
+                    <ul style="margin-left: 20px; margin-top: 5px;">
+                        <li>中文版：<strong>"交互式变基子提交..."</strong></li>
+                        <li>英文版：<strong>"Rebase children of XXX interactively..."</strong></li>
+                    </ul>
+                </div>
+                
+                <div class="step-container">
+                    <span class="step-number">3</span>
+                    <strong>交互式窗口</strong>
+                    <p style="margin-top: 10px;">在弹出的窗口中，你会看到所有要整理的提交列表</p>
+                </div>
+                
+                <div class="demo-window">
+                    <div class="window-header">交互式变基窗口</div>
+                    <div class="commit-row">
+                        <span class="drag-handle">☰</span>
+                        <select class="action-select">
+                            <option>Pick</option>
+                            <option>Squash</option>
+                            <option>Reword</option>
+                            <option>Drop</option>
+                        </select>
+                        <span style="margin-left: 10px;">abc123 - feat: 添加登录功能</span>
+                    </div>
+                    <div class="commit-row">
+                        <span class="drag-handle">☰</span>
+                        <select class="action-select">
+                            <option>Pick</option>
+                            <option selected>Squash</option>
+                            <option>Reword</option>
+                            <option>Drop</option>
+                        </select>
+                        <span style="margin-left: 10px;">def456 - fix: 修复样式问题</span>
+                    </div>
+                    <div class="commit-row">
+                        <span class="drag-handle">☰</span>
+                        <select class="action-select">
+                            <option>Pick</option>
+                            <option selected>Squash</option>
+                            <option>Reword</option>
+                            <option>Drop</option>
+                        </select>
+                        <span style="margin-left: 10px;">ghi789 - WIP: 临时提交</span>
+                    </div>
+                </div>
+                
+                <div class="step-container">
+                    <span class="step-number">4</span>
+                    <strong>选择操作</strong>
+                    <p style="margin-top: 10px;">对每个提交选择要执行的操作（见右侧说明）</p>
+                </div>
+                
+                <div class="step-container">
+                    <span class="step-number">5</span>
+                    <strong>确认执行</strong>
+                    <p style="margin-top: 10px;">点击"OK"或"开始变基"按钮</p>
+                </div>
+            </div>
+            
+            <!-- 右侧：操作说明 -->
+            <div class="card">
+                <div class="card-title">
+                    <span class="emoji">🎯</span>
+                    操作类型说明
+                </div>
+                
+                <div style="margin-bottom: 20px;">
+                    <span class="rebase-action action-pick">Pick（选择）</span>
+                    <p style="margin-top: 10px;">保留这个提交，不做任何修改</p>
+                    <div class="code-block">
+                        使用场景：重要的功能提交，需要保留
+                    </div>
+                </div>
+                
+                <div style="margin-bottom: 20px;">
+                    <span class="rebase-action action-squash">Squash（压缩）</span>
+                    <p style="margin-top: 10px;">将这个提交合并到前一个提交中</p>
+                    <div class="code-block">
+                        使用场景：修复前一个提交的小问题、临时提交
+                    </div>
+                </div>
+                
+                <div style="margin-bottom: 20px;">
+                    <span class="rebase-action action-reword">Reword（改写）</span>
+                    <p style="margin-top: 10px;">修改这个提交的提交信息</p>
+                    <div class="code-block">
+                        使用场景：提交信息写错了、不够清晰
+                    </div>
+                </div>
+                
+                <div style="margin-bottom: 20px;">
+                    <span class="rebase-action action-drop">Drop（删除）</span>
+                    <p style="margin-top: 10px;">完全删除这个提交</p>
+                    <div class="code-block">
+                        使用场景：测试代码、调试信息、无用的提交
+                    </div>
+                </div>
+                
+                <div style="margin-bottom: 20px;">
+                    <span class="rebase-action action-edit">Edit（编辑）</span>
+                    <p style="margin-top: 10px;">暂停在这个提交，允许修改代码</p>
+                    <div class="code-block">
+                        使用场景：需要修改这个提交的内容
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- 实战示例 -->
+        <div class="card">
+            <div class="card-title">
+                <span class="emoji">💻</span>
+                实战示例：整理混乱的提交历史
+            </div>
+            
+            <div class="tabs">
+                <div class="tab active" onclick="showTab('before')">整理前</div>
+                <div class="tab" onclick="showTab('during')">整理中</div>
+                <div class="tab" onclick="showTab('after')">整理后</div>
+            </div>
+            
+            <div id="before" class="tab-content active">
+                <h3>原始提交历史（混乱）</h3>
+                <div class="commit-list">
+                    <div class="commit-item">
+                        <span>7d3f2a1 - feat: 添加用户登录功能</span>
+                    </div>
+                    <div class="commit-item">
+                        <span>8e4g3b2 - fix: 修复登录按钮样式</span>
+                    </div>
+                    <div class="commit-item">
+                        <span>9f5h4c3 - WIP: 临时保存</span>
+                    </div>
+                    <div class="commit-item">
+                        <span>0a6i5d4 - fix: 再次修复样式</span>
+                    </div>
+                    <div class="commit-item">
+                        <span>1b7j6e5 - 添加console.log调试</span>
+                    </div>
+                    <div class="commit-item">
+                        <span>2c8k7f6 - 删除调试代码</span>
+                    </div>
+                    <div class="commit-item">
+                        <span>3d9l8g7 - feat: 添加记住密码功能</span>
+                    </div>
+                </div>
+            </div>
+            
+            <div id="during" class="tab-content">
+                <h3>交互式变基操作</h3>
+                <table>
+                    <thead>
+                        <tr>
+                            <th>操作</th>
+                            <th>提交</th>
+                            <th>说明</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td><span class="rebase-action action-pick">Pick</span></td>
+                            <td>添加用户登录功能</td>
+                            <td>保留主要功能</td>
+                        </tr>
+                        <tr>
+                            <td><span class="rebase-action action-squash">Squash</span></td>
+                            <td>修复登录按钮样式</td>
+                            <td>合并到登录功能</td>
+                        </tr>
+                        <tr>
+                            <td><span class="rebase-action action-squash">Squash</span></td>
+                            <td>WIP: 临时保存</td>
+                            <td>合并到登录功能</td>
+                        </tr>
+                        <tr>
+                            <td><span class="rebase-action action-squash">Squash</span></td>
+                            <td>再次修复样式</td>
+                            <td>合并到登录功能</td>
+                        </tr>
+                        <tr>
+                            <td><span class="rebase-action action-drop">Drop</span></td>
+                            <td>添加console.log调试</td>
+                            <td>删除调试代码</td>
+                        </tr>
+                        <tr>
+                            <td><span class="rebase-action action-drop">Drop</span></td>
+                            <td>删除调试代码</td>
+                            <td>不需要的提交</td>
+                        </tr>
+                        <tr>
+                            <td><span class="rebase-action action-pick">Pick</span></td>
+                            <td>添加记住密码功能</td>
+                            <td>保留独立功能</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+            
+            <div id="after" class="tab-content">
+                <h3>整理后的提交历史（清晰）</h3>
+                <div class="commit-list">
+                    <div class="commit-item">
+                        <span>abc1234 - feat: 完整的用户登录功能（包含样式修复）</span>
+                        <span style="color: #4caf50;">✅ 合并了4个提交</span>
+                    </div>
+                    <div class="commit-item">
+                        <span>def5678 - feat: 添加记住密码功能</span>
+                        <span style="color: #4caf50;">✅ 保留</span>
+                    </div>
+                </div>
+                <div class="success-box">
+                    <div class="success-title">✅ 整理成功！</div>
+                    <ul>
+                        <li>7个提交精简为2个</li>
+                        <li>删除了无用的调试提交</li>
+                        <li>合并了相关的修复</li>
+                        <li>提交历史更加清晰</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+        
+        <!-- 常见问题 -->
+        <div class="card">
+            <div class="card-title">
+                <span class="emoji">❓</span>
+                常见问题与解决
+            </div>
+            
+            <div class="warning-box">
+                <div class="warning-title">⚠️ 注意事项</div>
+                <ul>
+                    <li><strong>不要对已推送的公共分支进行rebase</strong></li>
+                    <li>Rebase会改变提交的SHA值</li>
+                    <li>如果已推送，需要使用 <code>git push --force-with-lease</code></li>
+                    <li>建议先创建备份分支：<code>git branch backup-before-rebase</code></li>
+                </ul>
+            </div>
+            
+            <div class="error-box">
+                <div class="error-title">❌ 遇到冲突怎么办？</div>
+                <ol>
+                    <li>Sourcetree会提示冲突文件</li>
+                    <li>手动解决冲突（编辑文件）</li>
+                    <li>在Sourcetree中标记为已解决</li>
+                    <li>点击"继续变基"按钮</li>
+                    <li>如果太复杂，可以点击"中止变基"</li>
+                </ol>
+            </div>
+            
+            <h3 style="margin-top: 20px;">快捷技巧</h3>
+            <table>
+                <thead>
+                    <tr>
+                        <th>场景</th>
+                        <th>操作建议</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>多个"修复"提交</td>
+                        <td>全部Squash到主功能提交</td>
+                    </tr>
+                    <tr>
+                        <td>WIP、临时提交</td>
+                        <td>Squash或Drop</td>
+                    </tr>
+                    <tr>
+                        <td>提交信息不清晰</td>
+                        <td>使用Reword重写</td>
+                    </tr>
+                    <tr>
+                        <td>调试代码提交</td>
+                        <td>Drop删除</td>
+                    </tr>
+                    <tr>
+                        <td>功能拆分不合理</td>
+                        <td>Edit编辑后重新提交</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+        
+        <!-- 最佳实践 -->
+        <div class="card">
+            <div class="card-title">
+                <span class="emoji">⭐</span>
+                最佳实践建议
+            </div>
+            
+            <div class="success-box">
+                <div class="success-title">推荐的工作流程</div>
+                <ol>
+                    <li><strong>在功能分支上开发</strong>，随意提交</li>
+                    <li><strong>开发完成后</strong>，使用交互式rebase整理</li>
+                    <li><strong>整理标准</strong>：
+                        <ul>
+                            <li>每个提交都应该是完整的功能点</li>
+                            <li>提交信息清晰明确</li>
+                            <li>没有调试或临时代码</li>
+                        </ul>
+                    </li>
+                    <li><strong>推送前</strong>最后检查一次历史</li>
+                </ol>
+            </div>
+            
+            <h3>命令行对照</h3>
+            <div class="code-block">
+# Sourcetree的交互式变基相当于：
+git rebase -i HEAD~5  # 整理最近5个提交
+git rebase -i master  # 整理到master的所有提交
+
+# 在编辑器中会看到：
+pick abc123 第一个提交
+squash def456 第二个提交
+reword ghi789 第三个提交
+drop jkl012 第四个提交
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        function showTab(tabName) {
+            // 移除所有active类
+            document.querySelectorAll('.tab').forEach(tab => {
+                tab.classList.remove('active');
+            });
+            document.querySelectorAll('.tab-content').forEach(content => {
+                content.classList.remove('active');
+            });
+            
+            // 添加active类到选中的标签
+            event.target.classList.add('active');
+            document.getElementById(tabName).classList.add('active');
+        }
+        
+        // 添加拖拽功能演示
+        document.querySelectorAll('.commit-row').forEach(row => {
+            row.draggable = true;
+            
+            row.addEventListener('dragstart', function(e) {
+                this.classList.add('dragging');
+            });
+            
+            row.addEventListener('dragend', function(e) {
+                this.classList.remove('dragging');
+            });
+        });
+    </script>
+</body>
+</html>
